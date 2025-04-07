@@ -1,33 +1,61 @@
-name: Hoyolab Discord Bot
+name: Run Discord Bot for Auto-Fill Links
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # JST 11:00 毎日
-  workflow_dispatch:
+    - cron: "0 0 * * *"  # 毎日1回実行 (UTC時間)
+  workflow_dispatch:  # 手動実行も可能
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
 
+    # キャッシュ設定：Pythonの依存関係とPlaywrightのブラウザをキャッシュする
     steps:
-      - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+    # Pythonの依存関係のキャッシュ
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pip
+          venv/
+        key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-python-
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+    # Python環境のセットアップ
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x'
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+    # 依存関係のインストール
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+        playwright install  # Playwrightのブラウザをインストール
 
-      - name: Run bot
-        run: python index.py
+    # スクリプトの実行
+    - name: Run bot script
+      run: |
+        source venv/bin/activate
+        python index.py  # Pythonスクリプトを実行
+
+    # 変更があった場合、sent_urls.txtをcommit
+    - name: Commit changes if any
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@users.noreply.github.com"
+        
+        # ファイルの変更を確認
+        if git diff --exit-code sent_urls.txt; then
+          echo "No changes detected in sent_urls.txt"
+        else
+          git add sent_urls.txt
+          git commit -m "Update sent_urls.txt with new auto-fill links"
+          git push
+        fi

@@ -12,10 +12,14 @@ headers = {
 def find_target_post():
     response = requests.get(HOYOLAB_URL, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
-    for a_tag in soup.find_all("a", href=True):
-        text = a_tag.get_text()
+
+    candidates = soup.find_all(string=True)
+    for text in candidates:
         if "崩壊スターレイル" in text and "シリアルコード" in text:
-            return "https://www.hoyolab.com" + a_tag["href"]
+            parent_a = text.find_parent("a")
+            if parent_a and parent_a.has_attr("href"):
+                return "https://www.hoyolab.com/" + parent_a["href"]
+
     return None
 
 def extract_auto_fill_link(post_url):

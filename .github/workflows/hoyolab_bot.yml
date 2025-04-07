@@ -59,3 +59,5 @@ jobs:
           git commit -m "Update sent_urls.txt with new auto-fill links"
           git push
         fi
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

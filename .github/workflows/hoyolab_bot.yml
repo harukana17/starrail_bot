@@ -2,7 +2,7 @@ name: Run Discord Bot for Auto-Fill Links
 
 on:
   schedule:
-    - cron: "0 0 * * *"  # 毎日1回実行 (UTC時間)
+    - cron: "0 2 * * *"  # 毎日1回実行 (UTC時間)
   workflow_dispatch:  # 手動実行も可能
 
 jobs:

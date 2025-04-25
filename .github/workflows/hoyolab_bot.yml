@@ -9,21 +9,9 @@ jobs:
   run-bot:
     runs-on: ubuntu-latest
 
-    # キャッシュ設定：Pythonの依存関係とPlaywrightのブラウザをキャッシュする
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    # Pythonの依存関係のキャッシュ
-    - name: Cache Python dependencies
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/pip
-          venv/
-        key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-python-
 
     # Python環境のセットアップ
     - name: Set up Python
@@ -31,19 +19,20 @@ jobs:
       with:
         python-version: '3.x'
 
-    # 依存関係のインストール
-    - name: Install dependencies
+    # 仮想環境を毎回新しく作成（キャッシュしない）
+    - name: Create and activate virtual environment
       run: |
         python -m venv venv
         source venv/bin/activate
+        pip install --upgrade pip
         pip install -r requirements.txt
-        playwright install  # Playwrightのブラウザをインストール
+        playwright install
 
     # スクリプトの実行
     - name: Run bot script
       run: |
         source venv/bin/activate
-        python index.py  # Pythonスクリプトを実行
+        python index.py
 
     # 変更があった場合、sent_urls.txtをcommit
     - name: Commit changes if any
@@ -51,7 +40,6 @@ jobs:
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@users.noreply.github.com"
         
-        # ファイルの変更を確認
         if git diff --exit-code sent_urls.txt; then
           echo "No changes detected in sent_urls.txt"
         else
@@ -60,4 +48,4 @@ jobs:
           git push
         fi
       env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -108,7 +108,7 @@ def main():
     if unique_autofill_links:
         # 自動入力リンクがあれば、改行区切りで通知
         message = "\n".join(unique_autofill_links)
-        send_to_discord(DISCORD_WEBHOOK_URL, f"# <:icon:1315525679969992705> シリアルコード<:icon:1315525679969992705>\n{message}")
+        send_to_discord(DISCORD_WEBHOOK_URL, f"# <:icon:1365469317453578270> シリアルコード<:icon:1365469411431026729>\n{message}")
         
         # 送信済みURLリストを更新（「自動入力リンク」のURLを保存）
         update_sent_urls(unique_autofill_links)
